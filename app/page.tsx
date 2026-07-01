@@ -13,6 +13,7 @@ import {
 } from "./components/constants";
 import LocationsTable from "./components/LocationsTable";
 import CityFilter from "./components/CityFilter";
+import { weekOfMonth, isLastOccurrenceOfWeekdayInMonth } from "@/lib/parse-schedule";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +41,11 @@ export default async function Home({
   for (const loc of locations) byCategory.get(loc.category)?.push(loc);
 
   // JS getDay(): 0=Sunday..6=Saturday; DAY_ORDER starts at Monday.
-  const jsDay = new Date().getDay();
+  const now = new Date();
+  const jsDay = now.getDay();
   const today = DAY_ORDER[(jsDay + 6) % 7];
+  const todayWeekNum = weekOfMonth(now);
+  const todayIsLastWeek = isLastOccurrenceOfWeekdayInMonth(now);
 
   function qs(overrides: { category?: string; region?: string; day?: string }) {
     const params = new URLSearchParams();
@@ -113,7 +117,12 @@ export default async function Home({
               {c}
               <span className="opacity-50">{rows.length}</span>
             </h2>
-            <LocationsTable rows={rows} today={today} />
+            <LocationsTable
+              rows={rows}
+              today={today}
+              todayWeekNum={todayWeekNum}
+              todayIsLastWeek={todayIsLastWeek}
+            />
           </section>
         );
       })}

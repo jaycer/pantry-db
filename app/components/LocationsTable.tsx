@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Day, Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS } from "./constants";
+import { occursThisWeek } from "@/lib/parse-schedule";
 
 type SortKey = "title" | "region" | "days" | "today" | "phone";
 type Dir = "asc" | "desc";
@@ -22,11 +23,22 @@ function openDays(loc: Location): string[] {
   });
 }
 
-function hoursToday(loc: Location, today: Day): string | null {
-  return loc[`${today}_hours` as keyof Location] as string | null;
+// Returns this location's hours text for `today`, but only if it actually
+// applies this week — e.g. a "Fourth Wednesday" entry returns null on any
+// Wednesday that isn't the month's fourth.
+function hoursToday(loc: Location, today: Day, todayWeekNum: number, todayIsLastWeek: boolean): string | null {
+  const text = loc[`${today}_hours` as keyof Location] as string | null;
+  if (!text) return null;
+  return occursThisWeek(text, todayWeekNum, todayIsLastWeek) ? text : null;
 }
 
-function sortValue(loc: Location, key: SortKey, today: Day): string {
+function sortValue(
+  loc: Location,
+  key: SortKey,
+  today: Day,
+  todayWeekNum: number,
+  todayIsLastWeek: boolean
+): string {
   switch (key) {
     case "title":
       return loc.title.toLowerCase();
@@ -35,21 +47,33 @@ function sortValue(loc: Location, key: SortKey, today: Day): string {
     case "days":
       return openDays(loc).join(",");
     case "today":
-      return hoursToday(loc, today) ?? "";
+      return hoursToday(loc, today, todayWeekNum, todayIsLastWeek) ?? "";
     case "phone":
       return loc.phone ?? "";
   }
 }
 
-export default function LocationsTable({ rows, today }: { rows: Location[]; today: Day }) {
+export default function LocationsTable({
+  rows,
+  today,
+  todayWeekNum,
+  todayIsLastWeek,
+}: {
+  rows: Location[];
+  today: Day;
+  todayWeekNum: number;
+  todayIsLastWeek: boolean;
+}) {
   const [sort, setSort] = useState<{ key: SortKey; dir: Dir }>({ key: "title", dir: "asc" });
 
   const sorted = useMemo(() => {
     return [...rows].sort((a, b) => {
-      const c = sortValue(a, sort.key, today).localeCompare(sortValue(b, sort.key, today));
+      const c = sortValue(a, sort.key, today, todayWeekNum, todayIsLastWeek).localeCompare(
+        sortValue(b, sort.key, today, todayWeekNum, todayIsLastWeek)
+      );
       return sort.dir === "asc" ? c : -c;
     });
-  }, [rows, sort, today]);
+  }, [rows, sort, today, todayWeekNum, todayIsLastWeek]);
 
   function toggle(key: SortKey) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -98,7 +122,9 @@ export default function LocationsTable({ rows, today }: { rows: Location[]; toda
                 )}
               </td>
               <td className="px-4 py-2 text-xs">
-                {hoursToday(loc, today) || <span className="opacity-30">Closed</span>}
+                {hoursToday(loc, today, todayWeekNum, todayIsLastWeek) || (
+                  <span className="opacity-30">Closed</span>
+                )}
               </td>
               <td className="px-4 py-2 text-xs opacity-70">
                 {loc.phone ?? <span className="opacity-30">—</span>}
