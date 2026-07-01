@@ -1,0 +1,28 @@
+PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS locations (
+  id INTEGER PRIMARY KEY,             -- reuses GCFB's own numeric id; stable across re-scrapes, enables idempotent upsert
+  category TEXT NOT NULL CHECK (category IN ('Pantry','Mobile Pantry','Hot Meals')),
+  title TEXT NOT NULL,
+  address TEXT NOT NULL,
+  city TEXT NOT NULL,
+  zip TEXT NOT NULL,
+  lat REAL,
+  lng REAL,
+  phone TEXT,
+  region TEXT NOT NULL CHECK (region IN ('city','east','west')),
+  monday_hours TEXT,
+  tuesday_hours TEXT,
+  wednesday_hours TEXT,
+  thursday_hours TEXT,
+  friday_hours TEXT,
+  saturday_hours TEXT,
+  sunday_hours TEXT,
+  notes TEXT,                         -- pre-seeded from hours.<day>.comments; user-editable afterward
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_locations_category ON locations(category);
+CREATE INDEX IF NOT EXISTS idx_locations_region ON locations(region);
