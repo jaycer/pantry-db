@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { getDb } from "../lib/db.ts";
 import { regionForZip } from "../lib/regions.ts";
+import { normalizeCity } from "../lib/normalize-city.ts";
 
 const DATA_PATH = path.join(process.cwd(), "data", "gcfb-locations.json");
 const DAYS = [
@@ -83,7 +84,7 @@ const run = db.transaction((records) => {
       category: record.category_title,
       title: record.title,
       address: record.address,
-      city: record.city,
+      city: normalizeCity(record.city),
       zip: record.zip,
       lat,
       lng,
