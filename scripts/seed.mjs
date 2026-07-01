@@ -81,11 +81,11 @@ const run = db.transaction((records) => {
     const lng = record.lng != null ? parseFloat(record.lng) : null;
     const row = {
       id: Number(record.id),
-      category: record.category_title,
-      title: record.title,
-      address: record.address,
+      category: record.category_title.trim(),
+      title: record.title.trim(),
+      address: record.address.trim(),
       city: normalizeCity(record.city),
-      zip: record.zip,
+      zip: record.zip.trim(),
       lat,
       lng,
       phone: record.phone ? record.phone.trim() : null,
