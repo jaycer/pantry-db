@@ -7,7 +7,9 @@
     "build": "node scripts/seed.mjs --reset && next build",
     "start": "next start -p 3001",
     "lint": "eslint",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "scrape": "node scripts/scrape.mjs",
+    "etl": "node scripts/scrape.mjs && node scripts/seed.mjs --reset"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
