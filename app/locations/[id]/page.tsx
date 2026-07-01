@@ -24,7 +24,7 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
           ← All locations
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold">{loc.title}</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">{loc.title}</h1>
           <span className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-700 dark:text-slate-100">
             {loc.category}
           </span>

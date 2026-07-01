@@ -38,15 +38,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <header className="border-b border-slate-200 dark:border-slate-800">
-          <nav className="mx-auto max-w-6xl flex items-center gap-6 px-6 py-3">
-            <Link href="/" className="font-bold text-lg">
+          <nav className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
+            <Link href="/" className="text-base font-bold sm:text-lg">
               Pantry DB
             </Link>
-            <span className="text-sm opacity-60">Free food near you — Cleveland, OH</span>
+            <span className="hidden text-sm opacity-60 sm:inline">Free food near you — Cleveland, OH</span>
             <ThemeToggle />
           </nav>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4 sm:px-6 sm:py-6">{children}</main>
       </body>
     </html>
   );
