@@ -1,4 +1,8 @@
-PRAGMA journal_mode = WAL;
+-- No WAL mode: the DB is written once at seed/build time, then opened
+-- read-only by the app forever after. WAL needs writable -wal/-shm
+-- sidecar files even to open for reading, which breaks on read-only
+-- serverless filesystems (Vercel etc) — the default rollback-journal
+-- mode is fully self-contained in this one file.
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS locations (

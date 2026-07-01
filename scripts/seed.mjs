@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getDb } from "../lib/db.ts";
+import { getWritableDb } from "../lib/db.ts";
 import { regionForZip } from "../lib/regions.ts";
 import { normalizeCity } from "../lib/normalize-city.ts";
 import { normalizePhone } from "../lib/normalize-phone.ts";
@@ -18,7 +18,7 @@ const DAYS = [
   "sunday",
 ];
 
-const db = getDb();
+const db = getWritableDb();
 
 if (process.argv.includes("--reset")) {
   db.exec("DELETE FROM locations");

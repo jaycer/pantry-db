@@ -8,15 +8,31 @@ const SCHEMA_PATH = path.join(DB_DIR, "schema.sql");
 
 let db: Database.Database | null = null;
 
+// Read-only connection used by the app itself. The database is fully
+// pre-seeded before the app runs (see scripts/seed.mjs, run as part of
+// `npm run build`) and the app never writes to it. Opening read-only
+// avoids setting WAL journal mode, which creates -wal/-shm sidecar files
+// on open and needs a writable filesystem — Vercel's (and most serverless
+// platforms') deployment filesystem is read-only outside /tmp, so a
+// read-write connection here would throw on every request.
 export function getDb(): Database.Database {
   if (!db) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-    db = new Database(DB_PATH);
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-    db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
+    if (!fs.existsSync(DB_PATH)) {
+      throw new Error(`Database not found at ${DB_PATH}. Run "npm run seed" first.`);
+    }
+    db = new Database(DB_PATH, { readonly: true, fileMustExist: true });
   }
   return db;
+}
+
+// Read-write connection used only by scripts/seed.mjs to create/populate
+// the database. Not used by the app itself. No WAL mode — see schema.sql.
+export function getWritableDb(): Database.Database {
+  fs.mkdirSync(DB_DIR, { recursive: true });
+  const wdb = new Database(DB_PATH);
+  wdb.pragma("foreign_keys = ON");
+  wdb.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
+  return wdb;
 }
 
 export const CATEGORIES = ["Pantry", "Mobile Pantry", "Hot Meals"] as const;
