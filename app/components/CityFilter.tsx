@@ -7,12 +7,20 @@ export default function CityFilter({
   category,
   region,
   day,
+  lat,
+  lng,
+  radius,
+  addr,
 }: {
   cities: string[];
   value?: string;
   category?: string;
   region?: string;
   day?: string;
+  lat?: string;
+  lng?: string;
+  radius?: string;
+  addr?: string;
 }) {
   const router = useRouter();
 
@@ -22,6 +30,10 @@ export default function CityFilter({
     if (region) params.set("region", region);
     if (day) params.set("day", day);
     if (e.target.value) params.set("city", e.target.value);
+    if (lat) params.set("lat", lat);
+    if (lng) params.set("lng", lng);
+    if (radius) params.set("radius", radius);
+    if (addr) params.set("addr", addr);
     const qs = params.toString();
     router.push(qs ? `/?${qs}` : "/");
   }

@@ -55,3 +55,17 @@ export function isRegion(v: string | undefined): v is Region {
 export function isDay(v: string | undefined): v is Day {
   return !!v && (DAY_ORDER as string[]).includes(v);
 }
+
+export const RADIUS_OPTIONS = [5, 10, 15, 25, 50] as const;
+export const RADIUS_LABELS: Record<string, string> = {
+  "5": "5 mi",
+  "10": "10 mi",
+  "15": "15 mi",
+  "25": "25 mi",
+  "50": "50 mi",
+  any: "Any distance",
+};
+
+export function isRadiusValue(v: string | undefined): boolean {
+  return !!v && (v === "any" || RADIUS_OPTIONS.includes(Number(v) as (typeof RADIUS_OPTIONS)[number]));
+}
