@@ -75,7 +75,7 @@ export default function LocationsTable({ rows }: { rows: Location[] }) {
                   <span className="font-medium">{loc.title}</span>
                 </Link>
                 <div className="text-xs opacity-60">
-                  {loc.address}, {loc.city} {loc.zip}
+                  {loc.address}, {loc.city}, OH {loc.zip}
                 </div>
               </td>
               <td className="px-4 py-2 text-xs opacity-70">
