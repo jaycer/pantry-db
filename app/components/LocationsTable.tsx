@@ -1,16 +1,17 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import type { Location } from "@/lib/db";
+import type { Day, Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS } from "./constants";
 
-type SortKey = "title" | "region" | "days" | "phone";
+type SortKey = "title" | "region" | "days" | "today" | "phone";
 type Dir = "asc" | "desc";
 
 const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "title", label: "Name" },
   { key: "region", label: "Area" },
   { key: "days", label: "Days Open" },
+  { key: "today", label: "Hours Today" },
   { key: "phone", label: "Phone" },
 ];
 
@@ -21,7 +22,11 @@ function openDays(loc: Location): string[] {
   });
 }
 
-function sortValue(loc: Location, key: SortKey): string {
+function hoursToday(loc: Location, today: Day): string | null {
+  return loc[`${today}_hours` as keyof Location] as string | null;
+}
+
+function sortValue(loc: Location, key: SortKey, today: Day): string {
   switch (key) {
     case "title":
       return loc.title.toLowerCase();
@@ -29,20 +34,22 @@ function sortValue(loc: Location, key: SortKey): string {
       return loc.region ? REGION_LABELS[loc.region] : "";
     case "days":
       return openDays(loc).join(",");
+    case "today":
+      return hoursToday(loc, today) ?? "";
     case "phone":
       return loc.phone ?? "";
   }
 }
 
-export default function LocationsTable({ rows }: { rows: Location[] }) {
+export default function LocationsTable({ rows, today }: { rows: Location[]; today: Day }) {
   const [sort, setSort] = useState<{ key: SortKey; dir: Dir }>({ key: "title", dir: "asc" });
 
   const sorted = useMemo(() => {
     return [...rows].sort((a, b) => {
-      const c = sortValue(a, sort.key).localeCompare(sortValue(b, sort.key));
+      const c = sortValue(a, sort.key, today).localeCompare(sortValue(b, sort.key, today));
       return sort.dir === "asc" ? c : -c;
     });
-  }, [rows, sort]);
+  }, [rows, sort, today]);
 
   function toggle(key: SortKey) {
     setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
@@ -89,6 +96,9 @@ export default function LocationsTable({ rows }: { rows: Location[] }) {
                 ) : (
                   <span className="opacity-30">—</span>
                 )}
+              </td>
+              <td className="px-4 py-2 text-xs">
+                {hoursToday(loc, today) || <span className="opacity-30">Closed</span>}
               </td>
               <td className="px-4 py-2 text-xs opacity-70">
                 {loc.phone ?? <span className="opacity-30">—</span>}

@@ -39,6 +39,10 @@ export default async function Home({
   for (const c of CATEGORY_ORDER) byCategory.set(c, []);
   for (const loc of locations) byCategory.get(loc.category)?.push(loc);
 
+  // JS getDay(): 0=Sunday..6=Saturday; DAY_ORDER starts at Monday.
+  const jsDay = new Date().getDay();
+  const today = DAY_ORDER[(jsDay + 6) % 7];
+
   function qs(overrides: { category?: string; region?: string; day?: string }) {
     const params = new URLSearchParams();
     const next = {
@@ -109,7 +113,7 @@ export default async function Home({
               {c}
               <span className="opacity-50">{rows.length}</span>
             </h2>
-            <LocationsTable rows={rows} />
+            <LocationsTable rows={rows} today={today} />
           </section>
         );
       })}
