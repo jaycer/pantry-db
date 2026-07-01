@@ -3,6 +3,7 @@ import path from "node:path";
 import { getDb } from "../lib/db.ts";
 import { regionForZip } from "../lib/regions.ts";
 import { normalizeCity } from "../lib/normalize-city.ts";
+import { normalizePhone } from "../lib/normalize-phone.ts";
 
 const DATA_PATH = path.join(process.cwd(), "data", "gcfb-locations.json");
 const DAYS = [
@@ -88,7 +89,7 @@ const run = db.transaction((records) => {
       zip: record.zip.trim(),
       lat,
       lng,
-      phone: record.phone ? record.phone.trim() : null,
+      phone: normalizePhone(record.phone),
       region: regionForZip(record.zip),
       notes: buildNotes(record.hours ?? {}),
     };
