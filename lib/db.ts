@@ -72,7 +72,7 @@ export interface Location {
 }
 
 export function listLocations(
-  filters: { category?: Category; region?: Region; day?: Day } = {}
+  filters: { category?: Category; region?: Region; day?: Day; city?: string } = {}
 ): Location[] {
   const where: string[] = [];
   const params: Record<string, unknown> = {};
@@ -88,6 +88,10 @@ export function listLocations(
     const col = DAY_COLUMN[filters.day];
     where.push(`(${col} IS NOT NULL AND TRIM(${col}) != '')`);
   }
+  if (filters.city) {
+    where.push("city = @city");
+    params.city = filters.city;
+  }
   const sql = `
     SELECT * FROM locations
     ${where.length ? "WHERE " + where.join(" AND ") : ""}
@@ -101,22 +105,10 @@ export function getLocation(id: number | string): Location | undefined {
     | undefined;
 }
 
-export function updateLocation(id: number, fields: Partial<Location>): Location | undefined {
-  const allowed = ["notes"];
-  const prev = getLocation(id);
-  if (!prev) return undefined;
-  const sets: string[] = [];
-  const params: Record<string, unknown> = { id };
-  for (const key of allowed) {
-    if (key in fields) {
-      sets.push(`${key} = @${key}`);
-      params[key] = (fields as Record<string, unknown>)[key];
-    }
-  }
-  if (!sets.length) return prev;
-  sets.push("updated_at = datetime('now')");
-  getDb()
-    .prepare(`UPDATE locations SET ${sets.join(", ")} WHERE id = @id`)
-    .run(params);
-  return getLocation(id);
+export function listCities(): string[] {
+  return (
+    getDb().prepare("SELECT DISTINCT city FROM locations ORDER BY city COLLATE NOCASE").all() as {
+      city: string;
+    }[]
+  ).map((r) => r.city);
 }

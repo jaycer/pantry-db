@@ -5,9 +5,10 @@
 // "East Side"/"West Side" get bucketed here. Zips left unmapped fall through
 // to `null` (no region tag — the location still shows under "All").
 // Unmapped on purpose:
-//   - Suburbs with a strong standalone identity (Parma, Cleveland Heights,
-//     Shaker Heights, Beachwood, Euclid, Westlake, Solon, North Royalton,
-//     Broadview Heights, Berea, North Olmsted, Olmsted Falls, Bay Village)
+//   - Suburbs with a strong standalone identity (Parma, Shaker Heights,
+//     Beachwood, Euclid, Westlake, Solon, North Royalton, Broadview Heights,
+//     Berea, North Olmsted, Olmsted Falls, Bay Village). Cleveland Heights is
+//     bucketed East despite also having a distinct identity, per request.
 //   - Far exurbs that aren't really "Cleveland" colloquially (Mentor,
 //     Chagrin Falls, Chardon, Painesville, Willoughby/Eastlake/Willowick/
 //     Wickliffe, Madison, Perry, Ashtabula, Mansfield, Ashland, etc.)
@@ -35,6 +36,7 @@ export const ZIP_REGION: Record<string, "east" | "west"> = {
   "44110": "east", // Collinwood
   "44112": "east", // East Cleveland (zip also touches Cleveland Hts — zip-level granularity limit)
   "44114": "east", // Downtown core/Warehouse District/CSU
+  "44118": "east", // Cleveland Heights / University Heights
   "44115": "east", // Campus District/south downtown
   "44120": "east", // Shaker Square/Buckeye
   "44121": "east", // South Euclid

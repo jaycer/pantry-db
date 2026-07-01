@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocation, type Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS_FULL } from "../../components/constants";
-import NotesEditor from "../../components/NotesEditor";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +71,11 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
         </Card>
 
         <Card title="Notes">
-          <NotesEditor id={loc.id} notes={loc.notes} />
+          {loc.notes ? (
+            <p className="whitespace-pre-wrap text-sm">{loc.notes}</p>
+          ) : (
+            <p className="text-sm opacity-50">No notes.</p>
+          )}
         </Card>
       </div>
     </div>

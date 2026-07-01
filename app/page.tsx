@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listLocations, type Location } from "@/lib/db";
+import { listLocations, listCities, type Location } from "@/lib/db";
 import {
   CATEGORY_ORDER,
   CATEGORY_SLUGS,
@@ -12,23 +12,27 @@ import {
   isDay,
 } from "./components/constants";
 import LocationsTable from "./components/LocationsTable";
+import CityFilter from "./components/CityFilter";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; region?: string; day?: string }>;
+  searchParams: Promise<{ category?: string; region?: string; day?: string; city?: string }>;
 }) {
-  const { category, region, day } = await searchParams;
+  const { category, region, day, city } = await searchParams;
   const activeCategory = category ? CATEGORY_SLUGS[category] : undefined;
   const activeRegion = isRegion(region) ? region : undefined;
   const activeDay = isDay(day) ? day : undefined;
+  const cities = listCities();
+  const activeCity = city && cities.includes(city) ? city : undefined;
 
   const locations = listLocations({
     category: activeCategory,
     region: activeRegion,
     day: activeDay,
+    city: activeCity,
   });
 
   const byCategory = new Map<string, Location[]>();
@@ -45,6 +49,7 @@ export default async function Home({
     if (next.category) params.set("category", next.category);
     if (next.region) params.set("region", next.region);
     if (next.day) params.set("day", next.day);
+    if (activeCity) params.set("city", activeCity);
     const s = params.toString();
     return s ? `/?${s}` : "/";
   }
@@ -79,6 +84,15 @@ export default async function Home({
           {DAY_ORDER.map((d) => (
             <FilterLink key={d} href={qs({ day: d })} label={DAY_LABELS[d]} active={activeDay === d} />
           ))}
+        </FilterRow>
+        <FilterRow label="City">
+          <CityFilter
+            cities={cities}
+            value={activeCity}
+            category={category}
+            region={region}
+            day={day}
+          />
         </FilterRow>
       </div>
 
