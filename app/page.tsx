@@ -11,6 +11,8 @@ import {
   isRegion,
   isDay,
   isRadiusValue,
+  isSortKey,
+  isSortDir,
 } from "./components/constants";
 import LocationsTable from "./components/LocationsTable";
 import CityFilter from "./components/CityFilter";
@@ -38,9 +40,11 @@ export default async function Home({
     lng?: string;
     radius?: string;
     addr?: string;
+    sort?: string;
+    dir?: string;
   }>;
 }) {
-  const { category, region, day, city, lat, lng, radius, addr } = await searchParams;
+  const { category, region, day, city, lat, lng, radius, addr, sort, dir } = await searchParams;
   const activeCategory = category ? CATEGORY_SLUGS[category] : undefined;
   const activeRegion = isRegion(region) ? region : undefined;
   const activeDay = isDay(day) ? day : undefined;
@@ -51,6 +55,11 @@ export default async function Home({
   const activeLng = parseFiniteInRange(lng, -180, 180);
   const activeRadius = isRadiusValue(radius) ? radius : undefined;
   const hasDistanceFilter = activeLat !== undefined && activeLng !== undefined && activeRadius !== undefined;
+
+  // Default to distance-ascending when a distance search is active and the
+  // user hasn't explicitly picked a different sort, otherwise title-ascending.
+  const activeSort = isSortKey(sort) ? sort : hasDistanceFilter ? "distance" : "title";
+  const activeDir = isSortDir(dir) ? dir : "asc";
 
   const rawLocations = listLocations({
     category: activeCategory,
@@ -94,6 +103,13 @@ export default async function Home({
       if (lng) params.set("lng", lng);
       if (radius) params.set("radius", radius);
       if (addr) params.set("addr", addr);
+    }
+    // Preserve an explicit sort, except when clearing a distance search
+    // while sorted by distance — that sort no longer makes sense once
+    // there's no origin point to measure from.
+    if (sort && !(overrides.clearDistance && sort === "distance")) {
+      params.set("sort", sort);
+      if (dir) params.set("dir", dir);
     }
     const s = params.toString();
     return s ? `/?${s}` : "/";
@@ -141,6 +157,8 @@ export default async function Home({
             lng={lng}
             radius={radius}
             addr={addr}
+            sort={sort}
+            dir={dir}
           />
         </FilterRow>
         <FilterRow label="Distance">
@@ -183,6 +201,8 @@ export default async function Home({
               todayIsLastWeek={todayIsLastWeek}
               originLat={activeLat}
               originLng={activeLng}
+              sort={activeSort}
+              dir={activeDir}
             />
           </section>
         );

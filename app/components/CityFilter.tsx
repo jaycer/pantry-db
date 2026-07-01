@@ -11,6 +11,8 @@ export default function CityFilter({
   lng,
   radius,
   addr,
+  sort,
+  dir,
 }: {
   cities: string[];
   value?: string;
@@ -21,6 +23,8 @@ export default function CityFilter({
   lng?: string;
   radius?: string;
   addr?: string;
+  sort?: string;
+  dir?: string;
 }) {
   const router = useRouter();
 
@@ -34,6 +38,8 @@ export default function CityFilter({
     if (lng) params.set("lng", lng);
     if (radius) params.set("radius", radius);
     if (addr) params.set("addr", addr);
+    if (sort) params.set("sort", sort);
+    if (dir) params.set("dir", dir);
     const qs = params.toString();
     router.push(qs ? `/?${qs}` : "/");
   }

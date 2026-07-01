@@ -50,6 +50,10 @@ export default function DistanceFilter({
       params.set("lng", lon);
       params.set("radius", radiusValue);
       params.set("addr", trimmed);
+      // A new search defaults to nearest-first, overriding whatever sort
+      // (if any) was previously active.
+      params.set("sort", "distance");
+      params.set("dir", "asc");
       setStatus("idle");
       router.push(`/?${params.toString()}`);
     } catch {

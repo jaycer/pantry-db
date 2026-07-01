@@ -1,13 +1,11 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Day, Location } from "@/lib/db";
-import { REGION_LABELS, DAY_ORDER, DAY_LABELS } from "./constants";
+import { REGION_LABELS, DAY_ORDER, DAY_LABELS, type SortKey, type SortDir } from "./constants";
 import { occursThisWeek } from "@/lib/parse-schedule";
 import { haversineMiles, formatMiles } from "@/lib/distance";
-
-type SortKey = "title" | "region" | "distance" | "days" | "today" | "phone";
-type Dir = "asc" | "desc";
 
 function openDays(loc: Location): Day[] {
   return DAY_ORDER.filter((d) => {
@@ -62,6 +60,8 @@ export default function LocationsTable({
   todayIsLastWeek,
   originLat,
   originLng,
+  sort,
+  dir,
 }: {
   rows: Location[];
   today: Day;
@@ -69,19 +69,30 @@ export default function LocationsTable({
   todayIsLastWeek: boolean;
   originLat?: number;
   originLng?: number;
+  sort: SortKey;
+  dir: SortDir;
 }) {
   const hasOrigin = originLat != null && originLng != null;
-  const [sort, setSort] = useState<{ key: SortKey; dir: Dir }>({ key: "title", dir: "asc" });
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // A distance search is submitted via URL navigation, which re-renders this
-  // same component instance (not a remount) — a plain useState initializer
-  // wouldn't notice. Adjust the sort during render when the origin changes
-  // (new search, new radius, or cleared), per React's documented pattern for
-  // resetting state on a prop change without an Effect.
-  const [prevOrigin, setPrevOrigin] = useState([originLat, originLng]);
-  if (prevOrigin[0] !== originLat || prevOrigin[1] !== originLng) {
-    setPrevOrigin([originLat, originLng]);
-    setSort({ key: hasOrigin ? "distance" : "title", dir: "asc" });
+  // Sort lives in the URL (like every other filter on this site), not local
+  // component state — that's what makes "click a sort header, open a
+  // location, hit back" idempotent: the sort is part of the page's address,
+  // not state that resets on remount.
+  function toggle(key: SortKey) {
+    const nextDir: SortDir = sort === key && dir === "asc" ? "desc" : "asc";
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("sort", key);
+    params.set("dir", nextDir);
+    router.push(`/?${params.toString()}`);
+  }
+
+  // Carries the current filters/sort along to the detail page as `from`, so
+  // its "← All locations" link can return to this exact view.
+  const currentQuery = searchParams.toString();
+  function detailHref(id: number) {
+    return currentQuery ? `/locations/${id}?from=${encodeURIComponent(currentQuery)}` : `/locations/${id}`;
   }
 
   const COLUMNS: { key: SortKey; label: string }[] = [
@@ -95,16 +106,12 @@ export default function LocationsTable({
 
   const sorted = useMemo(() => {
     return [...rows].sort((a, b) => {
-      const va = sortValue(a, sort.key, today, todayWeekNum, todayIsLastWeek, originLat, originLng);
-      const vb = sortValue(b, sort.key, today, todayWeekNum, todayIsLastWeek, originLat, originLng);
+      const va = sortValue(a, sort, today, todayWeekNum, todayIsLastWeek, originLat, originLng);
+      const vb = sortValue(b, sort, today, todayWeekNum, todayIsLastWeek, originLat, originLng);
       const c = typeof va === "number" && typeof vb === "number" ? va - vb : String(va).localeCompare(String(vb));
-      return sort.dir === "asc" ? c : -c;
+      return dir === "asc" ? c : -c;
     });
-  }, [rows, sort, today, todayWeekNum, todayIsLastWeek, originLat, originLng]);
-
-  function toggle(key: SortKey) {
-    setSort((s) => (s.key === key ? { key, dir: s.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
-  }
+  }, [rows, sort, dir, today, todayWeekNum, todayIsLastWeek, originLat, originLng]);
 
   return (
     <>
@@ -117,7 +124,7 @@ export default function LocationsTable({
           const dist = distanceMiles(loc, originLat, originLng);
           return (
             <div key={loc.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
-              <Link href={`/locations/${loc.id}`} className="font-medium text-blue-600 hover:underline">
+              <Link href={detailHref(loc.id)} className="font-medium text-blue-600 hover:underline">
                 {loc.title}
               </Link>
               <div className="mt-0.5 text-xs opacity-60">
@@ -164,7 +171,7 @@ export default function LocationsTable({
                     className="inline-flex items-center gap-1 hover:opacity-100"
                   >
                     {col.label}
-                    <span className="w-2">{sort.key === col.key ? (sort.dir === "asc" ? "▲" : "▼") : ""}</span>
+                    <span className="w-2">{sort === col.key ? (dir === "asc" ? "▲" : "▼") : ""}</span>
                   </button>
                 </th>
               ))}
@@ -176,7 +183,7 @@ export default function LocationsTable({
               return (
                 <tr key={loc.id} className="align-middle">
                   <td className="px-4 py-2">
-                    <Link href={`/locations/${loc.id}`} className="text-blue-600 hover:underline">
+                    <Link href={detailHref(loc.id)} className="text-blue-600 hover:underline">
                       <span className="font-medium">{loc.title}</span>
                     </Link>
                     <div className="text-xs opacity-60">

@@ -5,8 +5,15 @@ import { REGION_LABELS, DAY_ORDER, DAY_LABELS_FULL } from "../../components/cons
 
 export const dynamic = "force-dynamic";
 
-export default async function LocationPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function LocationPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
+}) {
   const { id } = await params;
+  const { from } = await searchParams;
   const loc = getLocation(id);
   if (!loc) notFound();
 
@@ -16,11 +23,16 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
   const today = DAY_ORDER[todayIndex];
 
   const mapsHref = `https://maps.google.com/?q=${encodeURIComponent(`${loc.address}, ${loc.city}, OH ${loc.zip}`)}`;
+  // Preserves whatever filters/sort were active on the dashboard when the
+  // user navigated here (see LocationsTable's `from` param), so "back" is
+  // idempotent regardless of whether you use this link or the browser's
+  // back button.
+  const backHref = from ? `/?${from}` : "/";
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/" className="text-sm opacity-60 hover:opacity-100">
+        <Link href={backHref} className="text-sm opacity-60 hover:opacity-100">
           ← All locations
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">

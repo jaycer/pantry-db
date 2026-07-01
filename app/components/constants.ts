@@ -69,3 +69,15 @@ export const RADIUS_LABELS: Record<string, string> = {
 export function isRadiusValue(v: string | undefined): boolean {
   return !!v && (v === "any" || RADIUS_OPTIONS.includes(Number(v) as (typeof RADIUS_OPTIONS)[number]));
 }
+
+export const SORT_KEYS = ["title", "region", "distance", "days", "today", "phone"] as const;
+export type SortKey = (typeof SORT_KEYS)[number];
+export type SortDir = "asc" | "desc";
+
+export function isSortKey(v: string | undefined): v is SortKey {
+  return !!v && (SORT_KEYS as readonly string[]).includes(v);
+}
+
+export function isSortDir(v: string | undefined): v is SortDir {
+  return v === "asc" || v === "desc";
+}
