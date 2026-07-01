@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS locations (
   lat REAL,
   lng REAL,
   phone TEXT,
-  region TEXT NOT NULL CHECK (region IN ('city','east','west')),
+  region TEXT CHECK (region IN ('east','west')),  -- NULL = unclassified (distinct-identity suburb or exurb)
   monday_hours TEXT,
   tuesday_hours TEXT,
   wednesday_hours TEXT,

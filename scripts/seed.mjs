@@ -88,7 +88,7 @@ const run = db.transaction((records) => {
       lat,
       lng,
       phone: record.phone ? record.phone.trim() : null,
-      region: regionForZip(record.zip, lng ?? undefined),
+      region: regionForZip(record.zip),
       notes: buildNotes(record.hours ?? {}),
     };
     for (const day of DAYS) {

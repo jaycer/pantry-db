@@ -29,9 +29,11 @@ export default async function LocationPage({ params }: { params: Promise<{ id: s
           <span className="rounded bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-800 dark:bg-slate-700 dark:text-slate-100">
             {loc.category}
           </span>
-          <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
-            {REGION_LABELS[loc.region]}
-          </span>
+          {loc.region && (
+            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">
+              {REGION_LABELS[loc.region]}
+            </span>
+          )}
         </div>
         <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm opacity-70">
           <a href={mapsHref} target="_blank" className="text-blue-600 hover:underline">

@@ -26,7 +26,7 @@ function sortValue(loc: Location, key: SortKey): string {
     case "title":
       return loc.title.toLowerCase();
     case "region":
-      return REGION_LABELS[loc.region];
+      return loc.region ? REGION_LABELS[loc.region] : "";
     case "days":
       return openDays(loc).join(",");
     case "phone":
@@ -78,7 +78,9 @@ export default function LocationsTable({ rows }: { rows: Location[] }) {
                   {loc.address}, {loc.city}
                 </div>
               </td>
-              <td className="px-4 py-2 text-xs opacity-70">{REGION_LABELS[loc.region]}</td>
+              <td className="px-4 py-2 text-xs opacity-70">
+                {loc.region ? REGION_LABELS[loc.region] : <span className="opacity-30">—</span>}
+              </td>
               <td className="px-4 py-2 text-xs">
                 {openDays(loc).length ? (
                   openDays(loc)

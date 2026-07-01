@@ -22,7 +22,7 @@ export function getDb(): Database.Database {
 export const CATEGORIES = ["Pantry", "Mobile Pantry", "Hot Meals"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
-export const REGIONS = ["city", "east", "west"] as const;
+export const REGIONS = ["east", "west"] as const;
 export type Region = (typeof REGIONS)[number];
 
 export const DAYS = [
@@ -58,7 +58,7 @@ export interface Location {
   lat: number | null;
   lng: number | null;
   phone: string | null;
-  region: Region;
+  region: Region | null;
   monday_hours: string | null;
   tuesday_hours: string | null;
   wednesday_hours: string | null;

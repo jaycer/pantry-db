@@ -14,9 +14,8 @@ export const CATEGORY_TO_SLUG: Record<Category, string> = {
   "Hot Meals": "hot-meals",
 };
 
-export const REGION_ORDER: Region[] = ["city", "east", "west"];
+export const REGION_ORDER: Region[] = ["east", "west"];
 export const REGION_LABELS: Record<Region, string> = {
-  city: "City",
   east: "East Side",
   west: "West Side",
 };
