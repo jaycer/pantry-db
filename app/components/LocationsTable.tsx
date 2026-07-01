@@ -89,7 +89,7 @@ export default function LocationsTable({
           const today_ = hoursToday(loc, today, todayWeekNum, todayIsLastWeek);
           return (
             <div key={loc.id} className="rounded-lg border border-slate-200 dark:border-slate-800 p-3">
-              <Link href={`/locations/${loc.id}`} className="font-medium hover:underline">
+              <Link href={`/locations/${loc.id}`} className="font-medium text-blue-600 hover:underline">
                 {loc.title}
               </Link>
               <div className="mt-0.5 text-xs opacity-60">
@@ -145,7 +145,7 @@ export default function LocationsTable({
             {sorted.map((loc) => (
               <tr key={loc.id} className="align-middle">
                 <td className="px-4 py-2">
-                  <Link href={`/locations/${loc.id}`} className="hover:underline">
+                  <Link href={`/locations/${loc.id}`} className="text-blue-600 hover:underline">
                     <span className="font-medium">{loc.title}</span>
                   </Link>
                   <div className="text-xs opacity-60">
