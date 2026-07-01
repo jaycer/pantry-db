@@ -132,11 +132,11 @@ export default async function Home({
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide opacity-50 sm:w-20">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <span className="text-xs font-semibold uppercase tracking-wide opacity-50 sm:w-20 sm:shrink-0">
         {label}
       </span>
-      {children}
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
 }

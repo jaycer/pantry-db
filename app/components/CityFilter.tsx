@@ -27,17 +27,22 @@ export default function CityFilter({
   }
 
   return (
-    <select
-      value={value ?? ""}
-      onChange={onChange}
-      className="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs"
-    >
-      <option value="">All</option>
-      {cities.map((c) => (
-        <option key={c} value={c}>
-          {c}
-        </option>
-      ))}
-    </select>
+    <div className="relative inline-block">
+      <select
+        value={value ?? ""}
+        onChange={onChange}
+        className="appearance-none rounded border border-slate-300 dark:border-slate-700 bg-transparent py-1 pl-2 pr-6 text-xs"
+      >
+        <option value="">All</option>
+        {cities.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] opacity-60">
+        ▾
+      </span>
+    </div>
   );
 }
