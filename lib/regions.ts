@@ -6,9 +6,10 @@
 // to `null` (no region tag — the location still shows under "All").
 // Unmapped on purpose:
 //   - Suburbs with a strong standalone identity (Parma, Shaker Heights,
-//     Beachwood, Euclid, Westlake, Solon, North Royalton, Broadview Heights,
-//     Berea, North Olmsted, Olmsted Falls, Bay Village). Cleveland Heights is
-//     bucketed East despite also having a distinct identity, per request.
+//     Beachwood, Westlake, Solon, North Royalton, Broadview Heights, Berea,
+//     North Olmsted, Olmsted Falls, Bay Village). Cleveland Heights and
+//     Euclid are bucketed East despite also having a distinct identity, per
+//     request.
 //   - Far exurbs that aren't really "Cleveland" colloquially (Mentor,
 //     Chagrin Falls, Chardon, Painesville, Willoughby/Eastlake/Willowick/
 //     Wickliffe, Madison, Perry, Ashtabula, Mansfield, Ashland, etc.)
@@ -36,14 +37,18 @@ export const ZIP_REGION: Record<string, "east" | "west"> = {
   "44110": "east", // Collinwood
   "44112": "east", // East Cleveland (zip also touches Cleveland Hts — zip-level granularity limit)
   "44114": "east", // Downtown core/Warehouse District/CSU
-  "44118": "east", // Cleveland Heights / University Heights
   "44115": "east", // Campus District/south downtown
+  "44117": "east", // Euclid
+  "44118": "east", // Cleveland Heights / University Heights
+  "44119": "east", // Cleveland (Nottingham/Collinwood) / Euclid
   "44120": "east", // Shaker Square/Buckeye
   "44121": "east", // South Euclid
+  "44123": "east", // Euclid
   "44124": "east", // Mayfield Hts
   "44125": "east", // Garfield Hts
   "44127": "east", // Central/Kinsman
   "44128": "east", // Highland Hills
+  "44132": "east", // Euclid
   "44137": "east", // Maple Heights
   "44143": "east", // Richmond Hts
   "44146": "east", // Bedford/Bedford Hts
