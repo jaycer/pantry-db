@@ -16,7 +16,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "phone", label: "Phone" },
 ];
 
-function openDays(loc: Location): string[] {
+function openDays(loc: Location): Day[] {
   return DAY_ORDER.filter((d) => {
     const val = loc[`${d}_hours` as keyof Location] as string | null;
     return !!val && val.trim() !== "";
