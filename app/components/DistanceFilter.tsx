@@ -65,7 +65,7 @@ export default function DistanceFilter({
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="e.g. 1709 Alvin Ave, Cleveland, OH 44109"
+          placeholder="e.g. 55 Public Square, Cleveland, OH 44113"
           className="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 text-xs sm:w-64"
         />
         <div className="flex items-center gap-2">
