@@ -5,6 +5,7 @@ import { regionForZip } from "../lib/regions.ts";
 import { normalizeCity } from "../lib/normalize-city.ts";
 import { normalizePhone } from "../lib/normalize-phone.ts";
 import { overrideCity } from "../lib/city-overrides.ts";
+import { overridePhone } from "../lib/phone-overrides.ts";
 
 const DATA_PATH = path.join(process.cwd(), "data", "gcfb-locations.json");
 const DAYS = [
@@ -91,7 +92,7 @@ const run = db.transaction((records) => {
       zip: record.zip.trim(),
       lat,
       lng,
-      phone: normalizePhone(record.phone),
+      phone: overridePhone(id, normalizePhone(record.phone)),
       region: regionForZip(record.zip),
       notes: buildNotes(record.hours ?? {}),
     };
