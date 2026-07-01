@@ -4,6 +4,7 @@ import { getDb } from "../lib/db.ts";
 import { regionForZip } from "../lib/regions.ts";
 import { normalizeCity } from "../lib/normalize-city.ts";
 import { normalizePhone } from "../lib/normalize-phone.ts";
+import { overrideCity } from "../lib/city-overrides.ts";
 
 const DATA_PATH = path.join(process.cwd(), "data", "gcfb-locations.json");
 const DAYS = [
@@ -78,14 +79,15 @@ const run = db.transaction((records) => {
       skipped++;
       continue;
     }
+    const id = Number(record.id);
     const lat = record.lat != null ? parseFloat(record.lat) : null;
     const lng = record.lng != null ? parseFloat(record.lng) : null;
     const row = {
-      id: Number(record.id),
+      id,
       category: record.category_title.trim(),
       title: record.title.trim(),
       address: record.address.trim(),
-      city: normalizeCity(record.city),
+      city: overrideCity(id, normalizeCity(record.city)),
       zip: record.zip.trim(),
       lat,
       lng,
