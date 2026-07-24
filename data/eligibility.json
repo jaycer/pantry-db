@@ -1,9 +1,14 @@
 {
   "_comment": "SUPPLEMENTAL eligibility overlay — facts NOT in the GCFB source (e.g. gathered from a facility's own flyer), keyed by GCFB location id. Restrictions that ARE in GCFB's notes are parsed automatically (see lib/restricted-area.ts) and marked source='gcfb-parsed'; entries here override those and are marked source='overlay'. Open-to-all is the safe default. Verify before adding — a false restriction can wrongly turn people away.",
-  "_shape": "\"<gcfb-id>\": { \"residentsOf\": [\"City\"], \"residentsOfZips\": [\"44113\"], \"note\": \"free-text requirement\" }",
+  "_shape": "\"<gcfb-id>\": { \"residentsOf\": [\"City\"], \"residentsOfZips\": [\"44113\"], \"note\": \"English requirement\", \"noteEs\": \"Spanish requirement\", \"supplemental\": { \"en\": \"other services\", \"es\": \"otros servicios\" } }",
 
   "263": {
     "residentsOfZips": ["44102", "44113", "44109"],
-    "note": "Food pantry: must live in 44102, 44113, or 44109. Bring ID and proof of address. Household income must be under 200% of the federal poverty level. (From the facility's flyer, not in GCFB data.)"
+    "note": "Food pantry: must live in 44102, 44113, or 44109. Bring ID and proof of address. Household income must be under 200% of the federal poverty level. (From the facility's flyer, not in GCFB data.)",
+    "noteEs": "Despensa de alimentos: debe vivir en 44102, 44113 o 44109. Traiga identificación y comprobante de domicilio. El ingreso del hogar debe ser inferior al 200% del nivel federal de pobreza. (Del folleto del lugar; no está en los datos de GCFB.)",
+    "supplemental": {
+      "en": "Other services at this location (from their flyer): Outreach Tue–Thu 9am–2pm — restrooms, hygiene items, referrals, free coffee, charging station. Housing help (NEOCH) Thursdays 11am. Clothing 2nd & 4th Wednesday 9:30–11am. ID voucher program for birth certificates or driver's license (bring Social Security card or a government printout with your SS#). Community meal the last Sunday of the month at 12pm. Thrift store Wednesdays 2–4pm; clothing bag sale the 1st Saturday of the month 10am–12pm.",
+      "es": "Otros servicios en este lugar (de su folleto): Servicios de alcance mar–jue 9am–2pm — baños, artículos de higiene, referencias, café gratis, estación de carga. Ayuda con vivienda (NEOCH) los jueves a las 11am. Ropa el 2.º y 4.º miércoles 9:30–11am. Programa de vales de identificación para actas de nacimiento o licencia de conducir (traiga la tarjeta de Seguro Social o un comprobante del gobierno con su número). Comida comunitaria el último domingo del mes a las 12pm. Tienda de segunda mano los miércoles 2–4pm; venta de bolsas de ropa el 1.er sábado del mes 10am–12pm."
+    }
   }
 }

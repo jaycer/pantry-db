@@ -12,10 +12,18 @@ import path from "node:path";
 export interface Eligibility {
   residentsOf: string[] | null; // cities the location restricts service to; null = none
   residentsOfZips: string[] | null; // ZIP codes the location restricts service to; null = none
-  note: string | null; // free-text requirement, e.g. "Bring photo ID"
+  note: string | null; // free-text requirement (English), e.g. "Bring photo ID"
+  noteEs: string | null; // Spanish translation of note, when curated
+  supplemental: { en: string; es: string } | null; // extra services/info gathered off-source (e.g. a flyer), bilingual
 }
 
-const OPEN_TO_ALL: Eligibility = { residentsOf: null, residentsOfZips: null, note: null };
+const OPEN_TO_ALL: Eligibility = {
+  residentsOf: null,
+  residentsOfZips: null,
+  note: null,
+  noteEs: null,
+  supplemental: null,
+};
 
 function load(): Record<number, Eligibility> {
   const file = path.join(process.cwd(), "data", "eligibility.json");
@@ -30,16 +38,25 @@ function load(): Record<number, Eligibility> {
     if (key.startsWith("_")) continue; // metadata (_comment/_example/etc.)
     const id = Number(key);
     if (!Number.isInteger(id) || value == null || typeof value !== "object") continue;
-    const v = value as { residentsOf?: unknown; residentsOfZips?: unknown; note?: unknown };
+    const v = value as {
+      residentsOf?: unknown;
+      residentsOfZips?: unknown;
+      note?: unknown;
+      noteEs?: unknown;
+      supplemental?: unknown;
+    };
     const toList = (x: unknown) =>
       Array.isArray(x) && x.length ? x.map((c) => String(c).trim()).filter(Boolean) : null;
-    const residentsOf = toList(v.residentsOf);
-    const residentsOfZips = toList(v.residentsOfZips);
-    const note = typeof v.note === "string" && v.note.trim() ? v.note.trim() : null;
+    const str = (x: unknown) => (typeof x === "string" && x.trim() ? x.trim() : null);
+    const s = v.supplemental as { en?: unknown; es?: unknown } | undefined;
+    const supplemental =
+      s && (str(s.en) || str(s.es)) ? { en: str(s.en) ?? "", es: str(s.es) ?? "" } : null;
     out[id] = {
-      residentsOf: residentsOf?.length ? residentsOf : null,
-      residentsOfZips: residentsOfZips?.length ? residentsOfZips : null,
-      note,
+      residentsOf: toList(v.residentsOf),
+      residentsOfZips: toList(v.residentsOfZips),
+      note: str(v.note),
+      noteEs: str(v.noteEs),
+      supplemental,
     };
   }
   return out;

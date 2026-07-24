@@ -6,6 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { listLocations, listCities } from "../lib/db.ts";
 import { dataMeta } from "../lib/meta.ts";
+import { eligibilityFor } from "../lib/eligibility.ts";
 
 // Drop the bookkeeping timestamps; keep everything the UI + PDFs need
 // (residency_cities is already hydrated to a string[] by listLocations).
@@ -13,7 +14,11 @@ const locations = listLocations().map((loc) => {
   const { created_at, updated_at, ...rest } = loc;
   void created_at;
   void updated_at;
-  return rest;
+  // Attach the display-only bilingual extras from the overlay (Spanish note +
+  // supplemental services gathered off-source). These aren't DB columns since
+  // they only drive presentation, not filtering.
+  const e = eligibilityFor(loc.id);
+  return { ...rest, eligibility_note_es: e.noteEs, supplemental: e.supplemental };
 });
 
 const meta = dataMeta();
