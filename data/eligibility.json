@@ -1,16 +1,9 @@
 {
-  "_comment": "Eligibility overlay keyed by GCFB location id. This data is NOT reliably in the GCFB source, so it is curated here. The SAFE DEFAULT is open-to-all: a location with no entry (or with residentsOf omitted) is treated as serving everyone. Only add a residentsOf restriction after confirming it — a false restriction can wrongly turn people away from food they qualify for. residentsOf powers the 'city you reside in' filter; note is free-text shown in the eligibility callout.",
-  "_shape": "\"<gcfb-id>\": { \"residentsOf\": [\"City A\", \"City B\"], \"note\": \"free-text requirement\" }",
-  "_provenance": "The entries below are transcribed from residency language that appears verbatim in the GCFB source hours comments (visible in each location's Notes). Verify against the facility before relying on them; availability changes.",
+  "_comment": "SUPPLEMENTAL eligibility overlay — facts NOT in the GCFB source (e.g. gathered from a facility's own flyer), keyed by GCFB location id. Restrictions that ARE in GCFB's notes are parsed automatically (see lib/restricted-area.ts) and marked source='gcfb-parsed'; entries here override those and are marked source='overlay'. Open-to-all is the safe default. Verify before adding — a false restriction can wrongly turn people away.",
+  "_shape": "\"<gcfb-id>\": { \"residentsOf\": [\"City\"], \"residentsOfZips\": [\"44113\"], \"note\": \"free-text requirement\" }",
 
-  "216": {
-    "residentsOf": ["Lakewood"],
-    "note": "Restricted service area — Lakewood residents only; served once a month."
-  },
-  "223": {
-    "residentsOf": ["Parma"]
-  },
-  "259": {
-    "note": "Restricted to residents of Villa Mercede Apartments (1331 West 70th St) and Northridge Commons (10462 Detroit Ave.)."
+  "263": {
+    "residentsOfZips": ["44102", "44113", "44109"],
+    "note": "Food pantry: must live in 44102, 44113, or 44109. Bring ID and proof of address. Household income must be under 200% of the federal poverty level. (From the facility's flyer, not in GCFB data.)"
   }
 }

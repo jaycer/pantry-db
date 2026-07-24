@@ -1,0 +1,4 @@
+{
+  "_comment": "When the GCFB source (data/gcfb-locations.json) was last pulled. scripts/scrape.mjs overwrites scrapedAt automatically on every successful scrape; this seeded value is the commit date of the current data as a best-effort starting point.",
+  "scrapedAt": "2026-07-01"
+}

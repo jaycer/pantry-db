@@ -10,11 +10,12 @@ import fs from "node:fs";
 import path from "node:path";
 
 export interface Eligibility {
-  residentsOf: string[] | null; // cities the location restricts service to; null = open to all
+  residentsOf: string[] | null; // cities the location restricts service to; null = none
+  residentsOfZips: string[] | null; // ZIP codes the location restricts service to; null = none
   note: string | null; // free-text requirement, e.g. "Bring photo ID"
 }
 
-const OPEN_TO_ALL: Eligibility = { residentsOf: null, note: null };
+const OPEN_TO_ALL: Eligibility = { residentsOf: null, residentsOfZips: null, note: null };
 
 function load(): Record<number, Eligibility> {
   const file = path.join(process.cwd(), "data", "eligibility.json");
@@ -29,13 +30,17 @@ function load(): Record<number, Eligibility> {
     if (key.startsWith("_")) continue; // metadata (_comment/_example/etc.)
     const id = Number(key);
     if (!Number.isInteger(id) || value == null || typeof value !== "object") continue;
-    const v = value as { residentsOf?: unknown; note?: unknown };
-    const residentsOf =
-      Array.isArray(v.residentsOf) && v.residentsOf.length
-        ? v.residentsOf.map((c) => String(c).trim()).filter(Boolean)
-        : null;
+    const v = value as { residentsOf?: unknown; residentsOfZips?: unknown; note?: unknown };
+    const toList = (x: unknown) =>
+      Array.isArray(x) && x.length ? x.map((c) => String(c).trim()).filter(Boolean) : null;
+    const residentsOf = toList(v.residentsOf);
+    const residentsOfZips = toList(v.residentsOfZips);
     const note = typeof v.note === "string" && v.note.trim() ? v.note.trim() : null;
-    out[id] = { residentsOf: residentsOf && residentsOf.length ? residentsOf : null, note };
+    out[id] = {
+      residentsOf: residentsOf?.length ? residentsOf : null,
+      residentsOfZips: residentsOfZips?.length ? residentsOfZips : null,
+      note,
+    };
   }
   return out;
 }
@@ -51,7 +56,7 @@ export function eligibilityCoverage(): { restricted: number; noted: number } {
   let restricted = 0;
   let noted = 0;
   for (const e of Object.values(OVERLAY)) {
-    if (e.residentsOf) restricted++;
+    if (e.residentsOf || e.residentsOfZips) restricted++;
     if (e.note) noted++;
   }
   return { restricted, noted };

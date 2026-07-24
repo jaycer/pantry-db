@@ -7,7 +7,8 @@ import { normalizePhone } from "../lib/normalize-phone.ts";
 import { overrideCity } from "../lib/city-overrides.ts";
 import { overridePhone } from "../lib/phone-overrides.ts";
 import { overrideNotes } from "../lib/notes-overrides.ts";
-import { eligibilityFor, eligibilityCoverage } from "../lib/eligibility.ts";
+import { eligibilityFor } from "../lib/eligibility.ts";
+import { parseRestriction } from "../lib/restricted-area.ts";
 
 const DATA_PATH = path.join(process.cwd(), "data", "gcfb-locations.json");
 const DAYS = [
@@ -49,12 +50,12 @@ const upsert = db.prepare(`
     id, category, title, address, city, zip, lat, lng, phone, region,
     monday_hours, tuesday_hours, wednesday_hours, thursday_hours,
     friday_hours, saturday_hours, sunday_hours, notes,
-    residency_cities, eligibility_note
+    residency_cities, residency_zips, eligibility_note, eligibility_source
   ) VALUES (
     @id, @category, @title, @address, @city, @zip, @lat, @lng, @phone, @region,
     @monday_hours, @tuesday_hours, @wednesday_hours, @thursday_hours,
     @friday_hours, @saturday_hours, @sunday_hours, @notes,
-    @residency_cities, @eligibility_note
+    @residency_cities, @residency_zips, @eligibility_note, @eligibility_source
   )
   ON CONFLICT(id) DO UPDATE SET
     category = excluded.category,
@@ -75,7 +76,9 @@ const upsert = db.prepare(`
     sunday_hours = excluded.sunday_hours,
     notes = excluded.notes,
     residency_cities = excluded.residency_cities,
+    residency_zips = excluded.residency_zips,
     eligibility_note = excluded.eligibility_note,
+    eligibility_source = excluded.eligibility_source,
     updated_at = datetime('now')
 `);
 
@@ -92,7 +95,27 @@ const run = db.transaction((records) => {
     const id = Number(record.id);
     const lat = record.lat != null ? parseFloat(record.lat) : null;
     const lng = record.lng != null ? parseFloat(record.lng) : null;
-    const eligibility = eligibilityFor(id);
+    const baseNotes = buildNotes(record.hours ?? {});
+
+    // Eligibility, two tiers. The hand-curated overlay (data/eligibility.json)
+    // is authoritative when present — it holds facts not in GCFB (e.g. a flyer).
+    // Otherwise, parse GCFB's own "Restricted Service Area" notes into structure
+    // deterministically. Either way the provenance is recorded so the UI/export
+    // can say where a restriction came from. Open-to-all is the default.
+    const overlay = eligibilityFor(id);
+    const parsed = parseRestriction(baseNotes);
+    let elig = { cities: null, zips: null, note: null, source: null };
+    if (overlay.residentsOf || overlay.residentsOfZips || overlay.note) {
+      elig = { cities: overlay.residentsOf, zips: overlay.residentsOfZips, note: overlay.note, source: "overlay" };
+    } else if (parsed && (parsed.cities.length || parsed.zips.length || parsed.note)) {
+      elig = {
+        cities: parsed.cities.length ? parsed.cities : null,
+        zips: parsed.zips.length ? parsed.zips : null,
+        note: parsed.note,
+        source: "gcfb-parsed",
+      };
+    }
+
     const row = {
       id,
       category: record.category_title.trim(),
@@ -104,11 +127,11 @@ const run = db.transaction((records) => {
       lng,
       phone: overridePhone(id, normalizePhone(record.phone)),
       region: regionForZip(record.zip),
-      notes: overrideNotes(id, buildNotes(record.hours ?? {})),
-      // Structured eligibility from the overlay; residency stored as JSON text
-      // (NULL = open to all, the safe default).
-      residency_cities: eligibility.residentsOf ? JSON.stringify(eligibility.residentsOf) : null,
-      eligibility_note: eligibility.note,
+      notes: overrideNotes(id, baseNotes),
+      residency_cities: elig.cities ? JSON.stringify(elig.cities) : null,
+      residency_zips: elig.zips ? JSON.stringify(elig.zips) : null,
+      eligibility_note: elig.note,
+      eligibility_source: elig.source,
     };
     for (const day of DAYS) {
       row[`${day}_hours`] = record.hours?.[day]?.text?.trim() || null;
@@ -147,10 +170,11 @@ function report() {
   const suspicious = cities
     .map((r) => r.city)
     .filter((c) => /\bHts\b/.test(c) || /\.$/.test(c) || (/[A-Za-z]/.test(c) && c === c.toUpperCase()));
-  const elig = eligibilityCoverage();
-  const withResidency = db
-    .prepare("SELECT COUNT(*) c FROM locations WHERE residency_cities IS NOT NULL")
+  const restricted = db
+    .prepare("SELECT COUNT(*) c FROM locations WHERE residency_cities IS NOT NULL OR residency_zips IS NOT NULL")
     .get().c;
+  const parsedN = db.prepare("SELECT COUNT(*) c FROM locations WHERE eligibility_source = 'gcfb-parsed'").get().c;
+  const overlayN = db.prepare("SELECT COUNT(*) c FROM locations WHERE eligibility_source = 'overlay'").get().c;
 
   console.log("\n--- validation report ---");
   console.log(`locations:            ${total}`);
@@ -161,7 +185,7 @@ function report() {
   if (suspicious.length) {
     console.log(`cities to review:     ${suspicious.join(", ")}  (add to lib/normalize-city.ts)`);
   }
-  console.log(`eligibility entries:  ${withResidency} residency-restricted, ${elig.noted} with a note (overlay: data/eligibility.json)`);
+  console.log(`eligibility:          ${restricted} with a service-area restriction (${parsedN} parsed from GCFB notes, ${overlayN} from overlay)`);
   console.log("-------------------------\n");
 }
 report();

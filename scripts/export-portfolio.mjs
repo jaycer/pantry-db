@@ -5,6 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { listLocations, listCities } from "../lib/db.ts";
+import { dataMeta } from "../lib/meta.ts";
 
 // Drop the bookkeeping timestamps; keep everything the UI + PDFs need
 // (residency_cities is already hydrated to a string[] by listLocations).
@@ -15,9 +16,12 @@ const locations = listLocations().map((loc) => {
   return rest;
 });
 
+const meta = dataMeta();
 const payload = {
-  source: "Greater Cleveland Food Bank",
+  source: meta.source,
   note: "Cleansed and enriched from GCFB's public food locator. Hours change — call ahead.",
+  scrapedAt: meta.scrapedAt, // when the GCFB source was last pulled
+  compiledAt: meta.compiledAt, // when this snapshot was built
   count: locations.length,
   cities: listCities(),
   locations,

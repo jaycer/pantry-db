@@ -83,26 +83,35 @@ export interface Location {
   saturday_hours: string | null;
   sunday_hours: string | null;
   notes: string | null;
-  residency_cities: string[] | null; // cities this location restricts service to; null = open to all
+  residency_cities: string[] | null; // cities this location restricts service to; null = none
+  residency_zips: string[] | null; // ZIP codes this location restricts service to; null = none
   eligibility_note: string | null; // free-text requirement, e.g. "Bring photo ID"
+  eligibility_source: string | null; // 'gcfb-parsed' | 'overlay' | null (open to all)
   created_at: string;
   updated_at: string;
 }
 
-// Rows come back from SQLite with `residency_cities` as JSON text (or NULL);
-// hydrate it into a string[] so callers get the typed `Location` shape.
-type Row = Omit<Location, "residency_cities"> & { residency_cities: string | null };
-function hydrate(row: Row): Location {
-  let residency: string[] | null = null;
-  if (row.residency_cities) {
-    try {
-      const parsed = JSON.parse(row.residency_cities);
-      if (Array.isArray(parsed) && parsed.length) residency = parsed.map(String);
-    } catch {
-      residency = null;
-    }
+// Rows come back from SQLite with the residency lists as JSON text (or NULL);
+// hydrate them into string[] so callers get the typed `Location` shape.
+type Row = Omit<Location, "residency_cities" | "residency_zips"> & {
+  residency_cities: string | null;
+  residency_zips: string | null;
+};
+function parseList(json: string | null): string[] | null {
+  if (!json) return null;
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) && v.length ? v.map(String) : null;
+  } catch {
+    return null;
   }
-  return { ...row, residency_cities: residency };
+}
+function hydrate(row: Row): Location {
+  return {
+    ...row,
+    residency_cities: parseList(row.residency_cities),
+    residency_zips: parseList(row.residency_zips),
+  };
 }
 
 export function listLocations(
@@ -112,6 +121,7 @@ export function listLocations(
     day?: Day;
     city?: string;
     reside?: string;
+    resideZip?: string;
   } = {}
 ): Location[] {
   const where: string[] = [];
@@ -132,14 +142,22 @@ export function listLocations(
     where.push("city = @city");
     params.city = filters.city;
   }
-  // "City you reside in": keep locations open to all (no restriction) plus those
-  // whose residency list includes the resident's city. json_each walks the
-  // JSON array safely — the raw value is never interpolated into SQL.
+  // Where you live. Each dimension only constrains locations restricted on THAT
+  // dimension: filtering by city hides city-restricted pantries that exclude you
+  // but leaves ZIP-restricted ones visible (you can't be excluded by a ZIP rule
+  // you didn't answer), and vice versa. json_each walks the JSON arrays safely —
+  // the raw values are never interpolated into SQL.
   if (filters.reside) {
     where.push(
       "(residency_cities IS NULL OR EXISTS (SELECT 1 FROM json_each(residency_cities) WHERE value = @reside))"
     );
     params.reside = filters.reside;
+  }
+  if (filters.resideZip) {
+    where.push(
+      "(residency_zips IS NULL OR EXISTS (SELECT 1 FROM json_each(residency_zips) WHERE value = @resideZip))"
+    );
+    params.resideZip = filters.resideZip;
   }
   const sql = `
     SELECT * FROM locations

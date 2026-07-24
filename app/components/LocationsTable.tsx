@@ -9,7 +9,7 @@ import { haversineMiles, formatMiles } from "@/lib/distance";
 import { residencyLabel } from "@/lib/eligibility-format";
 
 function EligibilityBadge({ loc }: { loc: Location }) {
-  const label = residencyLabel(loc.residency_cities);
+  const label = residencyLabel(loc.residency_cities, loc.residency_zips);
   if (!label) return null;
   return (
     <span

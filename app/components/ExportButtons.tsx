@@ -5,16 +5,23 @@ import type { PantryRecord } from "@/lib/pdf/model";
 // Client-side PDF export. The pdf-lib-backed builders are dynamically imported
 // on click so they stay out of the initial bundle. Both PDFs cover the whole
 // directory (not the current filter), matching the "all ~400 locations" intent.
-export default function ExportButtons({ records }: { records: PantryRecord[] }) {
+export default function ExportButtons({
+  records,
+  scrapedAt,
+}: {
+  records: PantryRecord[];
+  scrapedAt?: string | null;
+}) {
   const [busy, setBusy] = useState<null | "full" | "booklet">(null);
 
   async function make(kind: "full" | "booklet") {
     setBusy(kind);
     try {
+      const meta = { scrapedAt };
       const bytes =
         kind === "full"
-          ? await (await import("@/lib/pdf/full-pager")).buildFullPagerPdf(records)
-          : await (await import("@/lib/pdf/booklet")).buildBookletPdf(records);
+          ? await (await import("@/lib/pdf/full-pager")).buildFullPagerPdf(records, meta)
+          : await (await import("@/lib/pdf/booklet")).buildBookletPdf(records, meta);
       const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

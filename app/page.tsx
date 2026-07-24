@@ -21,6 +21,7 @@ import DistanceFilter from "./components/DistanceFilter";
 import ExportButtons from "./components/ExportButtons";
 import { weekOfMonth, isLastOccurrenceOfWeekdayInMonth } from "@/lib/parse-schedule";
 import { haversineMiles } from "@/lib/distance";
+import { dataMeta, freshnessLine } from "@/lib/meta";
 
 export const dynamic = "force-dynamic";
 
@@ -121,8 +122,11 @@ export default async function Home({
     return s ? `/?${s}` : "/";
   }
 
+  const meta = dataMeta();
+
   return (
     <div className="space-y-6">
+      <p className="text-xs opacity-60">{freshnessLine(meta)}</p>
       <div className="space-y-2">
         <FilterRow label="Category">
           <FilterLink href={qs({ category: "" })} label="All" active={!activeCategory} />
@@ -209,7 +213,7 @@ export default async function Home({
           )}
         </FilterRow>
         <FilterRow label="Print">
-          <ExportButtons records={listLocations()} />
+          <ExportButtons records={listLocations()} scrapedAt={meta.scrapedAt} />
         </FilterRow>
       </div>
 

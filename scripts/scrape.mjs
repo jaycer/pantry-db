@@ -72,6 +72,23 @@ if (previousCount != null && data.length < previousCount * MIN_COUNT_RATIO) {
 }
 
 fs.writeFileSync(OUT_PATH, JSON.stringify(data, null, 2) + "\n");
+
+// Stamp the freshness date so the UI/export/PDFs can say how current the data
+// is (see lib/meta.ts). Only the date is kept — that's the useful granularity.
+const META_PATH = path.join(process.cwd(), "data", "gcfb-meta.json");
+fs.writeFileSync(
+  META_PATH,
+  JSON.stringify(
+    {
+      _comment:
+        "When the GCFB source (data/gcfb-locations.json) was last pulled. Overwritten automatically by scripts/scrape.mjs.",
+      scrapedAt: new Date().toISOString().slice(0, 10),
+    },
+    null,
+    2
+  ) + "\n"
+);
+
 console.log(
   `Scraped ${data.length} locations` +
     (previousCount != null ? ` (was ${previousCount})` : "") +

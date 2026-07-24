@@ -24,8 +24,10 @@ CREATE TABLE IF NOT EXISTS locations (
   saturday_hours TEXT,
   sunday_hours TEXT,
   notes TEXT,                         -- derived from hours.<day>.comments (+ optional notes-overrides); rebuilt every seed
-  residency_cities TEXT,              -- JSON array of cities a location restricts service to; NULL = open to all. From data/eligibility.json
-  eligibility_note TEXT,              -- free-text eligibility requirement (e.g. "Bring photo ID"); from data/eligibility.json
+  residency_cities TEXT,              -- JSON array of cities a location restricts service to; NULL = none
+  residency_zips TEXT,                -- JSON array of ZIP codes a location restricts service to; NULL = none
+  eligibility_note TEXT,              -- free-text eligibility requirement (e.g. "Bring photo ID")
+  eligibility_source TEXT,            -- provenance: 'gcfb-parsed' (from source notes) | 'overlay' (hand-curated) | NULL (open to all)
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

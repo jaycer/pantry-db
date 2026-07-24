@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocation, type Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS_FULL } from "../../components/constants";
-import { residencyLabel } from "@/lib/eligibility-format";
+import { residencyLabel, provenanceLabel } from "@/lib/eligibility-format";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,8 @@ export default async function LocationPage({
   // idempotent regardless of whether you use this link or the browser's
   // back button.
   const backHref = from ? `/?${from}` : "/";
-  const residency = residencyLabel(loc.residency_cities);
+  const residency = residencyLabel(loc.residency_cities, loc.residency_zips);
+  const provenance = provenanceLabel(loc.eligibility_source);
 
   return (
     <div className="space-y-6">
@@ -69,6 +70,7 @@ export default async function LocationPage({
           {loc.eligibility_note && (
             <p className="mt-1 whitespace-pre-wrap text-sm opacity-80">{loc.eligibility_note}</p>
           )}
+          {provenance && <p className="mt-2 text-xs italic opacity-60">{provenance}</p>}
         </div>
       )}
 
