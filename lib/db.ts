@@ -83,12 +83,36 @@ export interface Location {
   saturday_hours: string | null;
   sunday_hours: string | null;
   notes: string | null;
+  residency_cities: string[] | null; // cities this location restricts service to; null = open to all
+  eligibility_note: string | null; // free-text requirement, e.g. "Bring photo ID"
   created_at: string;
   updated_at: string;
 }
 
+// Rows come back from SQLite with `residency_cities` as JSON text (or NULL);
+// hydrate it into a string[] so callers get the typed `Location` shape.
+type Row = Omit<Location, "residency_cities"> & { residency_cities: string | null };
+function hydrate(row: Row): Location {
+  let residency: string[] | null = null;
+  if (row.residency_cities) {
+    try {
+      const parsed = JSON.parse(row.residency_cities);
+      if (Array.isArray(parsed) && parsed.length) residency = parsed.map(String);
+    } catch {
+      residency = null;
+    }
+  }
+  return { ...row, residency_cities: residency };
+}
+
 export function listLocations(
-  filters: { category?: Category; region?: Region; day?: Day; city?: string } = {}
+  filters: {
+    category?: Category;
+    region?: Region;
+    day?: Day;
+    city?: string;
+    reside?: string;
+  } = {}
 ): Location[] {
   const where: string[] = [];
   const params: Record<string, unknown> = {};
@@ -108,17 +132,27 @@ export function listLocations(
     where.push("city = @city");
     params.city = filters.city;
   }
+  // "City you reside in": keep locations open to all (no restriction) plus those
+  // whose residency list includes the resident's city. json_each walks the
+  // JSON array safely — the raw value is never interpolated into SQL.
+  if (filters.reside) {
+    where.push(
+      "(residency_cities IS NULL OR EXISTS (SELECT 1 FROM json_each(residency_cities) WHERE value = @reside))"
+    );
+    params.reside = filters.reside;
+  }
   const sql = `
     SELECT * FROM locations
     ${where.length ? "WHERE " + where.join(" AND ") : ""}
     ORDER BY title COLLATE NOCASE`;
-  return getDb().prepare(sql).all(params) as Location[];
+  return (getDb().prepare(sql).all(params) as Row[]).map(hydrate);
 }
 
 export function getLocation(id: number | string): Location | undefined {
-  return getDb().prepare("SELECT * FROM locations WHERE id = ?").get(Number(id)) as
-    | Location
+  const row = getDb().prepare("SELECT * FROM locations WHERE id = ?").get(Number(id)) as
+    | Row
     | undefined;
+  return row ? hydrate(row) : undefined;
 }
 
 export function listCities(): string[] {

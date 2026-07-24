@@ -26,15 +26,39 @@ npm run etl
 `scripts/scrape.mjs` refuses to overwrite existing data if the scrape looks
 broken (GCFB changed their page structure, the result is empty/malformed, or
 the location count dropped by more than half) — it exits with an error
-instead, leaving `data/gcfb-locations.json` untouched. Normalization
-(trimming, city-name cleanup, phone formatting, East/West Side
-classification, and a couple of manually-verified corrections) all happens
-in `scripts/seed.mjs`, so any fresh scrape gets the same cleansing applied
-automatically.
+instead, leaving `data/gcfb-locations.json` untouched.
+
+### The cleanse is fully repeatable
+
+Normalization (trimming, city-name cleanup, phone formatting, East/West Side
+classification, per-location corrections, and the eligibility overlay) all
+happens in `scripts/seed.mjs`. Every column is rebuilt from committed inputs
+on every seed — the source JSON plus the overlay files
+(`lib/city-overrides.ts`, `lib/phone-overrides.ts`, `data/notes-overrides.json`,
+`data/eligibility.json`) — so **the database is a pure, deterministic function
+of what's in git**. A `--reset` rebuild always produces byte-identical data;
+nothing depends on hand-edits to the generated DB (which is git-ignored). Any
+one-off correction lives in an overlay file, keyed by GCFB id, so it survives
+a full rebuild.
+
+Every seed also prints a **validation report** (unclassified regions, cities
+that still look un-normalized, missing coordinates/phones, eligibility
+coverage) so drift in the upstream data is visible immediately rather than
+discovered later in the UI.
+
+### Eligibility overlay
+
+Eligibility requirements (e.g. "Parma residents only") are **not** in the GCFB
+source, so they live in `data/eligibility.json`, keyed by GCFB id and merged at
+seed time. The safe default is **open to all** — a location with no entry is
+treated as serving everyone. Only add a `residentsOf` restriction after
+confirming it with the facility; a false restriction can wrongly turn people
+away from food they qualify for. This structured field powers the "city you
+reside in" filter and the eligibility badge in the UI.
 
 The site is fully read-only in production — there's no editing UI, so
-`npm run seed --reset` (implied by `npm run build`'s build step) always
-reflects exactly what's in `data/gcfb-locations.json`.
+`npm run seed -- --reset` (implied by `npm run build`'s build step) always
+reflects exactly what's in the committed data + overlays.
 
 ## Stack
 
@@ -65,10 +89,13 @@ and reload from scratch (this is what `npm run build` and `npm run etl` do).
 - `lib/regions.ts` — zip code → East/West Side classification
 - `lib/distance.ts` — Haversine distance for the address-search filter
 - `lib/normalize-city.ts`, `lib/normalize-phone.ts` — cleansing applied at seed time
-- `lib/city-overrides.ts`, `lib/phone-overrides.ts` — manually-verified per-location corrections
+- `lib/city-overrides.ts`, `lib/phone-overrides.ts`, `lib/notes-overrides.ts` — manually-verified per-location corrections (overlays keyed by GCFB id)
+- `lib/eligibility.ts`, `data/eligibility.json` — structured eligibility overlay (residency restrictions + notes)
+- `lib/pdf/` — framework-agnostic PDF builders (full-pager + booklet) shared by the app and the static portfolio export
 - `db/schema.sql` — table schema
 - `scripts/scrape.mjs` — fetches GCFB's page and refreshes `data/gcfb-locations.json`
-- `scripts/seed.mjs` — normalizes and loads `data/gcfb-locations.json` into the database
+- `scripts/seed.mjs` — normalizes and loads `data/gcfb-locations.json` into the database, then prints a validation report
+- `scripts/export-portfolio.mjs` — emits the cleansed dataset as static JSON for the portfolio sub-app
 
 ## License
 

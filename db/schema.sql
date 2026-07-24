@@ -23,7 +23,9 @@ CREATE TABLE IF NOT EXISTS locations (
   friday_hours TEXT,
   saturday_hours TEXT,
   sunday_hours TEXT,
-  notes TEXT,                         -- pre-seeded from hours.<day>.comments; user-editable afterward
+  notes TEXT,                         -- derived from hours.<day>.comments (+ optional notes-overrides); rebuilt every seed
+  residency_cities TEXT,              -- JSON array of cities a location restricts service to; NULL = open to all. From data/eligibility.json
+  eligibility_note TEXT,              -- free-text eligibility requirement (e.g. "Bring photo ID"); from data/eligibility.json
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

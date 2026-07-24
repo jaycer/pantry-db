@@ -1,13 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
 
-export default function CityFilter({
+// "City you reside in" — semantically different from the City filter (which
+// matches a pantry's own city). Selecting your residence hides pantries that
+// restrict service to *other* cities, while keeping every open-to-all pantry.
+// Writes a `reside` URL param, preserving the other filters (mirrors CityFilter).
+export default function ResidenceFilter({
   cities,
   value,
   category,
   region,
   day,
-  reside,
+  city,
   lat,
   lng,
   radius,
@@ -20,7 +24,7 @@ export default function CityFilter({
   category?: string;
   region?: string;
   day?: string;
-  reside?: string;
+  city?: string;
   lat?: string;
   lng?: string;
   radius?: string;
@@ -35,8 +39,8 @@ export default function CityFilter({
     if (category) params.set("category", category);
     if (region) params.set("region", region);
     if (day) params.set("day", day);
-    if (reside) params.set("reside", reside);
-    if (e.target.value) params.set("city", e.target.value);
+    if (city) params.set("city", city);
+    if (e.target.value) params.set("reside", e.target.value);
     if (lat) params.set("lat", lat);
     if (lng) params.set("lng", lng);
     if (radius) params.set("radius", radius);
@@ -52,9 +56,10 @@ export default function CityFilter({
       <select
         value={value ?? ""}
         onChange={onChange}
+        aria-label="City you reside in"
         className="appearance-none rounded border border-slate-300 dark:border-slate-700 bg-transparent py-1 pl-2 pr-6 text-xs"
       >
-        <option value="">All</option>
+        <option value="">Anywhere</option>
         {cities.map((c) => (
           <option key={c} value={c}>
             {c}

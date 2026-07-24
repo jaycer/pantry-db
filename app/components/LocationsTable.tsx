@@ -6,6 +6,20 @@ import type { Day, Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS, type SortKey, type SortDir } from "./constants";
 import { occursThisWeek } from "@/lib/parse-schedule";
 import { haversineMiles, formatMiles } from "@/lib/distance";
+import { residencyLabel } from "@/lib/eligibility-format";
+
+function EligibilityBadge({ loc }: { loc: Location }) {
+  const label = residencyLabel(loc.residency_cities);
+  if (!label) return null;
+  return (
+    <span
+      title={loc.eligibility_note ?? undefined}
+      className="ml-2 inline-block whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300"
+    >
+      {label}
+    </span>
+  );
+}
 
 function openDays(loc: Location): Day[] {
   return DAY_ORDER.filter((d) => {
@@ -127,6 +141,7 @@ export default function LocationsTable({
               <Link href={detailHref(loc.id)} className="font-medium text-blue-600 hover:underline">
                 {loc.title}
               </Link>
+              <EligibilityBadge loc={loc} />
               <div className="mt-0.5 text-xs opacity-60">
                 {loc.address}, {loc.city}, OH {loc.zip}
                 {dist != null && ` — ${formatMiles(dist)} away`}
@@ -186,6 +201,7 @@ export default function LocationsTable({
                     <Link href={detailHref(loc.id)} className="text-blue-600 hover:underline">
                       <span className="font-medium">{loc.title}</span>
                     </Link>
+                    <EligibilityBadge loc={loc} />
                     <div className="text-xs opacity-60">
                       {loc.address}, {loc.city}, OH {loc.zip}
                     </div>

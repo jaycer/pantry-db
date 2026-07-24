@@ -8,6 +8,7 @@ export default function DistanceFilter({
   region,
   day,
   city,
+  reside,
   addr,
   radius,
 }: {
@@ -15,6 +16,7 @@ export default function DistanceFilter({
   region?: string;
   day?: string;
   city?: string;
+  reside?: string;
   addr?: string;
   radius?: string;
 }) {
@@ -46,6 +48,7 @@ export default function DistanceFilter({
       if (region) params.set("region", region);
       if (day) params.set("day", day);
       if (city) params.set("city", city);
+      if (reside) params.set("reside", reside);
       params.set("lat", lat);
       params.set("lng", lon);
       params.set("radius", radiusValue);

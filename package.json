@@ -9,11 +9,13 @@
     "lint": "eslint",
     "seed": "node scripts/seed.mjs",
     "scrape": "node scripts/scrape.mjs",
-    "etl": "node scripts/scrape.mjs && node scripts/seed.mjs --reset"
+    "etl": "node scripts/scrape.mjs && node scripts/seed.mjs --reset",
+    "export:portfolio": "node scripts/seed.mjs --reset && node scripts/export-portfolio.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.10.0",
     "next": "16.2.9",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

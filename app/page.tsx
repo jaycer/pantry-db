@@ -16,7 +16,9 @@ import {
 } from "./components/constants";
 import LocationsTable from "./components/LocationsTable";
 import CityFilter from "./components/CityFilter";
+import ResidenceFilter from "./components/ResidenceFilter";
 import DistanceFilter from "./components/DistanceFilter";
+import ExportButtons from "./components/ExportButtons";
 import { weekOfMonth, isLastOccurrenceOfWeekdayInMonth } from "@/lib/parse-schedule";
 import { haversineMiles } from "@/lib/distance";
 
@@ -36,6 +38,7 @@ export default async function Home({
     region?: string;
     day?: string;
     city?: string;
+    reside?: string;
     lat?: string;
     lng?: string;
     radius?: string;
@@ -44,12 +47,13 @@ export default async function Home({
     dir?: string;
   }>;
 }) {
-  const { category, region, day, city, lat, lng, radius, addr, sort, dir } = await searchParams;
+  const { category, region, day, city, reside, lat, lng, radius, addr, sort, dir } = await searchParams;
   const activeCategory = category ? CATEGORY_SLUGS[category] : undefined;
   const activeRegion = isRegion(region) ? region : undefined;
   const activeDay = isDay(day) ? day : undefined;
   const cities = listCities();
   const activeCity = city && cities.includes(city) ? city : undefined;
+  const activeReside = reside && cities.includes(reside) ? reside : undefined;
 
   const activeLat = parseFiniteInRange(lat, -90, 90);
   const activeLng = parseFiniteInRange(lng, -180, 180);
@@ -66,6 +70,7 @@ export default async function Home({
     region: activeRegion,
     day: activeDay,
     city: activeCity,
+    reside: activeReside,
   });
 
   const locations = hasDistanceFilter
@@ -98,6 +103,7 @@ export default async function Home({
     if (next.region) params.set("region", next.region);
     if (next.day) params.set("day", next.day);
     if (activeCity) params.set("city", activeCity);
+    if (activeReside) params.set("reside", activeReside);
     if (!overrides.clearDistance) {
       if (lat) params.set("lat", lat);
       if (lng) params.set("lng", lng);
@@ -153,6 +159,7 @@ export default async function Home({
             category={category}
             region={region}
             day={day}
+            reside={activeReside}
             lat={lat}
             lng={lng}
             radius={radius}
@@ -161,12 +168,34 @@ export default async function Home({
             dir={dir}
           />
         </FilterRow>
+        <FilterRow label="You live in">
+          <ResidenceFilter
+            cities={cities}
+            value={activeReside}
+            category={category}
+            region={region}
+            day={day}
+            city={activeCity}
+            lat={lat}
+            lng={lng}
+            radius={radius}
+            addr={addr}
+            sort={sort}
+            dir={dir}
+          />
+          {activeReside && (
+            <span className="text-xs opacity-60">
+              showing pantries open to {activeReside} residents
+            </span>
+          )}
+        </FilterRow>
         <FilterRow label="Distance">
           <DistanceFilter
             category={category}
             region={region}
             day={day}
             city={activeCity}
+            reside={activeReside}
             addr={addr}
             radius={radius}
           />
@@ -178,6 +207,9 @@ export default async function Home({
               </Link>
             </span>
           )}
+        </FilterRow>
+        <FilterRow label="Print">
+          <ExportButtons records={listLocations()} />
         </FilterRow>
       </div>
 

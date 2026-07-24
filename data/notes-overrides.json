@@ -1,0 +1,4 @@
+{
+  "_comment": "Optional per-location notes corrections, keyed by GCFB id. The base `notes` value is rebuilt deterministically from the GCFB hours comments on every seed; an entry here replaces it, so any hand-curated note survives a full rebuild (unlike editing the DB directly, which a --reset wipes). Keys starting with \"_\" are ignored.",
+  "_example": { "223": "Closed the week of major holidays; call ahead." }
+}

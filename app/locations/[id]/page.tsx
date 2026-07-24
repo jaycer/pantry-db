@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocation, type Location } from "@/lib/db";
 import { REGION_LABELS, DAY_ORDER, DAY_LABELS_FULL } from "../../components/constants";
+import { residencyLabel } from "@/lib/eligibility-format";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ export default async function LocationPage({
   // idempotent regardless of whether you use this link or the browser's
   // back button.
   const backHref = from ? `/?${from}` : "/";
+  const residency = residencyLabel(loc.residency_cities);
 
   return (
     <div className="space-y-6">
@@ -57,6 +59,18 @@ export default async function LocationPage({
           )}
         </div>
       </div>
+
+      {(residency || loc.eligibility_note) && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-amber-800 dark:text-amber-300">
+            Eligibility
+          </h2>
+          {residency && <p className="mt-1 text-sm font-medium">{residency}</p>}
+          {loc.eligibility_note && (
+            <p className="mt-1 whitespace-pre-wrap text-sm opacity-80">{loc.eligibility_note}</p>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card title="Hours">
